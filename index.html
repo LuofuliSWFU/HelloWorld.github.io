@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我和小队友</title>
+    <!-- 1. 引入资源 -->
+    <!-- 引入css相关的资源 -->
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <link rel="stylesheet" href="./style/style.css">
+    <!-- 引入js相关的资源 -->
+    <!-- 用自己申请的CODE和KEY -->
+    <script type="text/javascript">
+        window._AMapSecurityConfig = {
+            securityJsCode: '18ce272a553295593a12273ceafcec90',
+        };
+    </script>
+    <script src="https://webapi.amap.com/maps?v=2.0&key=c2d41093d0de2ff063d9decdd5a4fe46&plugin=AMap.Geocoder,AMap.GeoJSON"
+        type="text/javascript"> </script>
+    <!-- const loadConfig = {
+        key: '18ce272a553295593a12273ceafcec90',
+        version: '2.0',
+        plugins: ['AMap.GeoJSON']
+      }; -->
+    <script src="funcset.js"></script>
+    <script src="store.js"></script>
+
+</head>
+<body>
+    <div id="container"></div>
+    <div class="input-card">
+        <div class="input-item">
+            <input type="button" class="btn" value="开始动画" id="start" onclick="startAnimation()"/>
+        </div>
+    </div>
+  <div id="movingDiv"></div>
+
+    <script>
+       var map = new AMap.Map('container',{
+           center: [104.16, 28.23],
+           zoom: 7,
+           viewMode: '3D', 
+        });
+        var speed = 300, duration = 2000, address;
+        var ViewCenter = new AMap.LngLat(116.681212,39.852698); 
+        var POSLuo = new AMap.LngLat(104.16, 28.23), POSFan = new AMap.LngLat(104.93, 28.73);
+        var ADDList = ['云南省昭通市盐津县普洱镇', '云南省昭通市水富市云天化中学','昆明理工大学莲华校区主教学楼', '中国矿业大学(北京)学院路校区','云南省昆明市西南林业大学', 
+        "四川省宜宾市南溪区江南镇马家乡", "内江师范学院高桥校区","河南理工大学南校区",
+            "北京市朝阳区中国科学院遥感与数字地球研究所(科荟南路)","昆明理工大学莲华校区主教学楼",];
+        var geocoder = new AMap.Geocoder();
+        var LuoMarker = new AMap.LabelMarker({
+            map:map,
+            position: POSLuo,
+            icon: {
+                image: 'LuoPicture.jpg',
+                size: [30, 30],
+            },
+        }) 
+
+        var FanMarker = new AMap.LabelMarker({
+            map:map,
+            position: POSFan,
+            icon: {
+                image: 'FanPicture.jpg',
+                size: [30, 30],
+            },
+            
+        })
+        var labelsLayer = new AMap.LabelsLayer({
+            collision: true,
+        });
+        labelsLayer.add(FanMarker);  labelsLayer.add(LuoMarker); 
+        map.add(labelsLayer);// 将 LabelsLayer 添加到地图上
+        var passedPolylineLuo = new AMap.Polyline({
+        map: map, strokeColor: "#332574", strokeWeight: 6,      //线宽
+        });
+        var passedPolylineFan = new AMap.Polyline({
+            map: map,  strokeColor: "#FF0000", strokeWeight: 6,      //线宽
+        });
+        LuoMarker.on('moving', function (e){
+            passedPolylineLuo.setPath(e.passedPath);
+            map.setCenter(e.target.getPosition(),true);
+            // console.log(e.target.getPosition())
+        })
+        FanMarker.on('moving', function (e){
+            passedPolylineFan.setPath(e.passedPath);
+            map.setCenter(e.target.getPosition(),true)
+            // console.log(e.target.getPosition())
+        })
+        AMap.plugin('AMap.MoveAnimation', function() {
+            console.log(ADDList),
+            geocoder.getLocation(ADDList, function(status, result) {
+                if (status === 'complete'&&result.geocodes.length) {
+                var lineArrLuo1 = [[result.geocodes[0].location.lng, result.geocodes[0].location.lat], [result.geocodes[1].location.lng, result.geocodes[1].location.lat]];
+                var lineArrLuo2 = [lineArrLuo1[1],[result.geocodes[2].location.lng, result.geocodes[2].location.lat]];
+                var lineArrLuo3 = [lineArrLuo2[1],[result.geocodes[3].location.lng, result.geocodes[3].location.lat]];
+                var lineArrLuo4 = [lineArrLuo3[1],[result.geocodes[4].location.lng, result.geocodes[4].location.lat]];
+                var K = 5;
+                var lineArrFan1 = [[result.geocodes[K].location.lng, result.geocodes[K].location.lat], [result.geocodes[K+1].location.lng, result.geocodes[K+1].location.lat]];
+                var lineArrFan2 = [lineArrFan1[1],[result.geocodes[K+2].location.lng, result.geocodes[K+2].location.lat]];
+                var lineArrFan3 = [lineArrFan2[1],[result.geocodes[K+3].location.lng, result.geocodes[K+3].location.lat]];
+                var lineArrFan4 = [lineArrFan3[1],[12.37, 51.33]];
+                var lineArrFan5 = [lineArrFan4[1],[result.geocodes[K+4].location.lng, result.geocodes[K+4].location.lat]];
+                
+                window.startAnimation = function startAnimationLuo() {
+                    map.setZoom(10);   
+                    setTimeout(function(){startmoveAlong(LuoMarker, [1992, 2009], lineArrLuo1, duration, speed)}, duration*2);
+                    setTimeout(function(){startmoveAlong(FanMarker, [1993, 2014], lineArrFan1, duration, speed)}, duration*3);
+                    setTimeout(function(){map.setFitView();map.setZoom(9);}, duration*6);
+
+                    setTimeout(function(){startmoveAlong(LuoMarker, [2009, 2016], lineArrLuo2, duration, speed);},duration*8);
+                    setTimeout(function(){startmoveAlong(FanMarker, [2014, 2017], lineArrFan2, duration, speed);},duration*10);
+                    setTimeout(function(){map.setFitView();map.setZoom(7);}, duration*13);
+
+                    setTimeout(function(){startmoveAlong(LuoMarker, [2016, 2022], lineArrLuo3, duration, speed);},duration*15);
+                    setTimeout(function(){startmoveAlong(FanMarker, [2017, 2022], lineArrFan3, duration, speed);},duration*17);
+                    setTimeout(function(){
+                        var center1 = lineArrLuo3[1], center2 = lineArrFan3[1];
+                        var Center = new  AMap.LngLat((center1[0]+center2[0])/2, (center1[1]+center2[1])/2);
+                        map.setCenter(Center,true); map.setZoom(14);}, duration*19);
+                    setTimeout(function(){map.setZoom(4);startmoveAlong(FanMarker, [2022, 2023],lineArrFan4, duration*3, speed);},duration*23);
+                    setTimeout(function(){currentCenter=AMap.LngLat(12.37, 51.33);map.setCenter(currentCenter,true); map.setZoom(8);},duration*28);
+                    setTimeout(function(){
+                        map.setZoom(4); 
+                        let d = new Date().getFullYear();
+                        console.log(d.getFullYear);
+                        startmoveAlong(LuoMarker, [2023, d], lineArrLuo4, duration, speed);},duration*30);
+                    setTimeout(function(){let d = new Date().getFullYear(); startmoveAlong(FanMarker,  [2023, d],  lineArrFan5, duration, speed); map.setZoom(4);},duration*32);
+                    setTimeout(function(){
+                        var center1 = lineArrLuo4[1], center2 = lineArrFan5[1];
+                        var Center = new  AMap.LngLat((center1[0]+center2[0])/2, (center1[1]+center2[1])/2);
+                        map.setCenter(Center,true); map.setZoom(15);}, duration*34);
+                    }
+                }
+            })
+        })
+    </script>
+</body>
+</html>
